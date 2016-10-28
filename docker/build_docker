@@ -1,0 +1,21 @@
+#!/bin/sh
+
+IMAGE_TAG=padavan:env
+user=$USER
+uid=$UID
+
+# script environment
+PRJROOT=`readlink -e \`dirname $0\`/../`
+DOCKERFILE=docker/Dockerfile
+TOOLCHAIN=toolchain-mipsel
+
+if [ ! -f "$DOCKERFILE" ] ; then
+    echo "Dockerfile ($DOCKERFILE) not found! Terminate."
+    exit 1
+fi
+
+cd $PRJROOT && docker build -t "$IMAGE_TAG" -f "$DOCKERFILE" \
+--build-arg toolchain="$TOOLCHAIN" \
+--build-arg user="$user" \
+--build-arg uid="$uid" \
+"$PRJROOT"
