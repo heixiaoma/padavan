@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-ImageName=padavan:env
+ImageName=padavan:rtn18u
 HostName=padavan
 SrcDir=""
 
