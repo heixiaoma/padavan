@@ -5,17 +5,15 @@ LABEL maintainer="YiJun Chen <gzenux@gmail.com>"
 
 # install basic required packages
 RUN apt-get update && apt-get install -y \
-	autoconf automake autopoint \
+	automake autopoint \
 	bison build-essential \
-	gawk gettext git \
+	gawk gettext \
 	flex \
 	libtool \
-	mc \
-	nano \
-	pkg-config \
+	module-init-tools \
+	pkg-config python-docutils \
 	sudo \
 	texinfo \
-	vim \
 	libgmp3-dev \
 	libmpc-dev \
 	libmpfr-dev \
