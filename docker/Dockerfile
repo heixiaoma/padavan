@@ -12,14 +12,19 @@ RUN apt-get update && apt-get install -y \
 	libtool \
 	module-init-tools \
 	pkg-config python-docutils \
+	rsync \
 	sudo \
 	texinfo \
+	unzip \
+	wget \
 	libgmp3-dev \
 	libmpc-dev \
 	libmpfr-dev \
 	libncurses5-dev \
 	zlib1g-dev
 
+# generate locale
+RUN locale-gen en_US.UTF-8
 
 # Add user and switch to the user
 ARG UID
