@@ -1,0 +1,28 @@
+/* ASUS RT-N18U */
+
+#define BOARD_PID		"RT-N18U"
+#define BOARD_NAME		"RT-N18U"
+#define BOARD_DESC		"ASUS RT-N18U Wireless Router"
+#define BOARD_VENDOR_NAME	"ASUSTek Computer Inc."
+#define BOARD_VENDOR_URL	"http://www.asus.com/"
+#define BOARD_MODEL_URL		"http://www.asus.com/Networking/RTN18U/"
+#define BOARD_BOOT_TIME		90
+#define BOARD_FLASH_TIME	180
+#undef  BOARD_GPIO_BTN_RESET
+#undef  BOARD_GPIO_BTN_WPS
+#undef  BOARD_GPIO_LED_ALL
+#undef  BOARD_GPIO_LED_WIFI
+#undef  BOARD_GPIO_LED_POWER
+#undef  BOARD_GPIO_LED_LAN
+#undef  BOARD_GPIO_LED_WAN
+#undef  BOARD_GPIO_LED_USB
+#undef  BOARD_GPIO_LED_ROUTER
+#undef  BOARD_GPIO_PWR_USB
+#define BOARD_HAS_5G_11AC	0
+#define BOARD_NUM_ANT_5G_TX	0
+#define BOARD_NUM_ANT_5G_RX	0
+#define BOARD_NUM_ANT_2G_TX	3
+#define BOARD_NUM_ANT_2G_RX	3
+#undef  BOARD_NUM_ETH_LEDS
+#define BOARD_HAS_EPHY_L1000	1
+#define BOARD_HAS_EPHY_W1000	1
