@@ -1,0 +1,17 @@
+.EXPORT_ALL_VARIABLES:
+
+###########################################################################
+
+ENDIAN = little
+CPUFLAGS = -marm
+VENDOR_CFLAGS =
+UOPT = -Os
+LOPT = -Os
+HOST_TARGET = arm-linux
+
+###########################################################################
+
+include $(ROOTDIR)/vendors/config/mips/config.arch
+
+###########################################################################
+

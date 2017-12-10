@@ -85,6 +85,10 @@ if [ "$CONFIG_LINUXDIR" = "linux-3.0.x" ] ; then
 	kernel_id="3.0.x"
 fi
 
+if [ "$CONFIG_LINUXDIR" = "linux-2.6.36.x" ] ; then
+	kernel_id="2.6.36.x"
+fi
+
 if [ "$CONFIG_FIRMWARE_TYPE_ROOTFS_IN_RAM" = "y" ] ; then
 	kernel_cf="${kernel_cd}/kernel-${kernel_id}.ram.config"
 else

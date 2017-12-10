@@ -67,6 +67,14 @@ CONFIG_CROSS_COMPILER_PATH = $(CONFIG_CROSS_COMPILER_ROOT)/bin
 KERNEL_HEADERS_PATH = $(CONFIG_CROSS_COMPILER_ROOT)/include
 endif
 
+# Toolchain configuration for Broadcom platform
+ifeq ($(CONFIG_VENDOR),Broadcom)
+CONFIG_TOOLCHAIN_DIR=$(ROOTDIR)/../toolchain-brcmarm
+CONFIG_CROSS_COMPILER_ROOT = $(CONFIG_TOOLCHAIN_DIR)/hndtools-arm-linux-2.6.36-uclibc-4.5.3
+CONFIG_CROSS_COMPILER_PATH = $(CONFIG_CROSS_COMPILER_ROOT)/bin
+KERNEL_HEADERS_PATH = $(CONFIG_CROSS_COMPILER_ROOT)/include
+endif
+
 ifeq (config.arch,$(wildcard config.arch))
 ifeq ($(filter %_default, $(MAKECMDGOALS)),)
 include config.arch
