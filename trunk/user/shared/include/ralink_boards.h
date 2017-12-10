@@ -18,7 +18,7 @@
 #ifndef _RALINK_BOARDS_H_
 #define _RALINK_BOARDS_H_
 
-#include <ralink_board.h>
+#include <_board.h>
 
 #define FW_MTD_NAME		"Firmware_Stub"
 #define FW_IMG_NAME		"/tmp/linux.trx"

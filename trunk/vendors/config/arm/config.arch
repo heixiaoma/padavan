@@ -63,6 +63,9 @@ MACH_DIR       = $(shell $(CC) -print-multi-directory)
 # have we set a special config below
 UCLINUX_BUILD_SET = 0
 
+# shortcut for proprietary path
+PROPRIETARY = proprietary/$(CONFIG_VENDOR)
+
 # Pull in common definitions
 include $(ROOTDIR)/vendors/config/common/config.arch
 

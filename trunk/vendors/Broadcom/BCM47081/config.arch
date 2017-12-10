@@ -3,15 +3,20 @@
 ###########################################################################
 
 ENDIAN = little
-CPUFLAGS = -marm
-VENDOR_CFLAGS =
+CPUFLAGS = -march=armv7-a
+VENDOR_CFLAGS = -DBCM47081 -DBCMARM -DLINUX26
 UOPT = -Os
 LOPT = -Os
+LINUXTARGET = vmlinux
 HOST_TARGET = arm-linux
+BCMEX = _arm
+BCMARM = y
+BCMWL5 = y
+BCM47081 = y
 
 ###########################################################################
 
-include $(ROOTDIR)/vendors/config/mips/config.arch
+include $(ROOTDIR)/vendors/config/arm/config.arch
 
 ###########################################################################
 

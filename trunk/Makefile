@@ -72,7 +72,7 @@ ifeq ($(CONFIG_VENDOR),Broadcom)
 CONFIG_TOOLCHAIN_DIR=$(ROOTDIR)/../toolchain-brcmarm
 CONFIG_CROSS_COMPILER_ROOT = $(CONFIG_TOOLCHAIN_DIR)/hndtools-arm-linux-2.6.36-uclibc-4.5.3
 CONFIG_CROSS_COMPILER_PATH = $(CONFIG_CROSS_COMPILER_ROOT)/bin
-KERNEL_HEADERS_PATH = $(CONFIG_CROSS_COMPILER_ROOT)/include
+KERNEL_HEADERS_PATH = $(CONFIG_CROSS_COMPILER_ROOT)/arm-linux/sysroot/usr/include
 endif
 
 ifeq (config.arch,$(wildcard config.arch))
