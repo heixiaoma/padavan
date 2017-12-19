@@ -7,7 +7,7 @@ trx_asus: trx_asus.c
 	$(CC) $(CFLAGS) -o $@ $^
 
 clean:
-	rm -f *.o trx_asus piggy target.squashfs vmlinuz-lzma
+	rm -f *.o trx_asus
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $<

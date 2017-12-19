@@ -67,7 +67,7 @@ void help(void)
 	fprintf(stderr,
 		"Usage: -i <input> {output}\n"
 		"Output:\n"
-		" ASUS: 	  -r <id>,<v1>,<v2>,<v3>,<v4>,<output file>\n"
+		" ASUS:    -r <id>,<v1>.<v2>.<v3>.<v4>,<output file>\n"
 		"\n"
 	);
 	exit(1);
@@ -121,7 +121,7 @@ void finalize_trx(void)
 }
 
 #define MAX_STRING 12
-#define MAX_VER 4	
+#define MAX_VER 4
 
 typedef struct {
 	uint8_t major;
@@ -131,9 +131,9 @@ typedef struct {
 typedef struct {
 	version_t kernel;
 	version_t fs;
-	char 	  productid[MAX_STRING];
+	char      productid[MAX_STRING];
 	version_t hw[MAX_VER*2];
-	char	  pad[32];
+	char      pad[32];
 } TAIL;
 
 /* usage:
@@ -158,8 +158,8 @@ int create_asus(const char *optarg)
 	strncpy(&asus_tail.productid[0], pid, MAX_STRING);
 
 	ver = strsep(&next, ",");
-	if(!ver) return 0;	
-	
+	if(!ver) return 0;
+
 	sscanf(ver, "%d.%d.%d.%d", &v1, &v2, &v3, &v4);
 	asus_tail.kernel.major = (uint8_t)v1;
 	asus_tail.kernel.minor = (uint8_t)v2;
@@ -205,7 +205,7 @@ int main(int argc, char **argv)
 		case 'i':
 			load_image(optarg);
 			break;
-		case 'r':	
+		case 'r':
 			create_asus(optarg);
 			break;
 		default:
