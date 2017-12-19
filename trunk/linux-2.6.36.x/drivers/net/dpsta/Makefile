@@ -20,7 +20,8 @@
 
 obj-${CONFIG_DPSTA} := dpsta.o
 
-DPSTASRC := ../../../../../../src-rt-6.x.4708/router/dpsta
+DPSTASRC := ../../../../$(PROPRIETARY)/dpsta
+
 DPSTAOBJ := $(DPSTASRC)/dpsta_linux.o
 SYMOBJ := $(DPSTASRC)/dpsta_linux.o
 

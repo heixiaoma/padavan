@@ -20,7 +20,7 @@
 
 obj-${CONFIG_BCM_CTF} := ctf.o
 
-CTFSRC := ../../../../../../src-rt-6.x.4708/router/ctf${BCMEX}/
+CTFSRC := ../../../../$(PROPRIETARY)/ctf${BCMEX}/
 CTFOBJ := $(CTFSRC)/hndctf.o $(CTFSRC)/hndctf_linux.o
 SYMOBJ := $(CTFSRC)/hndctf.o
 

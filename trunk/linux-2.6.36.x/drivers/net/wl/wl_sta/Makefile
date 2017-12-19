@@ -18,7 +18,7 @@
 # $Id: Makefile,v 1.2 2007-11-17 01:37:40 $
 #
 
-SRCBASE_OFFSET := ../../../../../../../src-rt-6.x.4708
+SRCBASE_OFFSET := ../../../../../$(PROPRIETARY)
 
 ifeq ($(CONFIG_WL_STA),)
 CONFIG_WL_STA := "wlconfig_lx_router_sta"
