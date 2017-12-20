@@ -28,6 +28,12 @@ PROTOCOLS_CONFIG=--enable-protocol=file
 
 CFLAGS += -D_LARGEFILE64_SOURCE -D_LFS64_LARGEFILE
 
+ifeq ($(ARCH),mips)
+ARCH_OPTS=--as="$(AS)"
+else ifeq ($(ARCH),arm)
+ARCH_OPTS=--as="$(CC)"
+endif
+
 all: config_test
 	$(MAKE) -C $(SRC_NAME)
 
@@ -44,10 +50,10 @@ configure:
 		--prefix=$(STAGEDIR) \
 		--cross-prefix=$(CROSS_COMPILE) \
 		--enable-cross-compile \
-		--arch=mips \
+		--arch=$(ARCH) \
 		--target-os=linux \
 		--cc="$(CC)" \
-		--as="$(AS)" \
+		$(ARCH_OPTS) \
 		$(if $(LIBS_BUILD_SHARED),--disable-static,--enable-static) \
 		$(if $(LIBS_BUILD_SHARED),--enable-shared,--disable-shared) \
 		--enable-small \
