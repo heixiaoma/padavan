@@ -13,7 +13,11 @@ include $(ARCH_CONFIG)
 
 DESTDIR=$(ROOTDIR)/stage
 
+ifeq ($(CONFIG_VENDOR),Broadcom)
+LIBC_DIR = uClibc-0.9.32.1
+else
 LIBC_DIR = uClibc-0.9.33.2
+endif
 
 all:
 	$(MAKE) -j$(HOST_NCPU) -C $(LIBC_DIR) && \

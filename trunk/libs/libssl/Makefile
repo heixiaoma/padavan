@@ -31,6 +31,12 @@ ifneq ($(CONFIG_FIRMWARE_INCLUDE_OPENSSL_EC),y)
 OPENSSL_CIPHERS += no-ec
 endif
 
+ifeq ($(ARCH),mips)
+ARCH_OPTS=linux-mipsel
+else ifeq ($(ARCH),arm)
+ARCH_OPTS=linux-armv4
+endif
+
 all: config_test
 	$(MAKE) -C $(SRC_NAME)
 
@@ -44,7 +50,7 @@ config_test:
 configure:
 	( cd $(SRC_NAME) ; \
 	./Configure \
-		linux-mipsel \
+		$(ARCH_OPTS) \
 		shared \
 		--prefix=/ \
 		--install_prefix=$(STAGEDIR) \
