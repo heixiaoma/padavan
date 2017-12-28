@@ -483,10 +483,10 @@ early_nvram_getall(char *buf, int count)
 #endif /* !MODULE */
 
 extern char * _nvram_get(const char *name);
-extern int _nvram_set(const char *name, const char *value);
+extern int _nvram_set(const char *name, const char *value, int is_temp);
 extern int _nvram_unset(const char *name);
-extern int _nvram_getall(char *buf, int count);
-extern int _nvram_commit(struct nvram_header *header);
+extern int _nvram_getall(char *buf, int count, int include_temp);
+extern int _nvram_generate(struct nvram_header *header, int rehash);
 extern int _nvram_init(si_t *sih);
 extern void _nvram_exit(void);
 
@@ -527,7 +527,7 @@ _nvram_read(char *buf)
 }
 
 struct nvram_tuple *
-_nvram_realloc(struct nvram_tuple *t, const char *name, const char *value)
+_nvram_realloc(struct nvram_tuple *t, const char *name, const char *value, int is_temp)
 {
 	if ((nvram_offset + strlen(value) + 1) > nvram_space)
 		return NULL;
@@ -543,6 +543,9 @@ _nvram_realloc(struct nvram_tuple *t, const char *name, const char *value)
 		t->value = NULL;
 	}
 
+	/* Mark for temp tuple */
+	t->val_tmp = (is_temp) ? 1 : 0;
+
 	/* Copy value */
 	if (t->value == NULL || strlen(t->value) < strlen(value)) {
 		/* Alloc value space */
@@ -552,7 +555,7 @@ _nvram_realloc(struct nvram_tuple *t, const char *name, const char *value)
 	} else if( 0 != strcmp(t->value, value)) {
 		/* In place */
 		strcpy(t->value, value);
-	} 
+	}
 
 	return t;
 }
@@ -574,8 +577,8 @@ nvram_init(void *sih)
 	return 0;
 }
 
-int
-nvram_set(const char *name, const char *value)
+static int
+nvram_set_temp(const char *name, const char *value, int is_temp)
 {
 	unsigned long flags;
 	int ret;
@@ -603,23 +606,29 @@ nvram_set(const char *name, const char *value)
                 else
                 {
                         cfe_update(name+strlen(CFE_NVRAM_PREFIX), value);
-                        _nvram_set(name+strlen(CFE_NVRAM_PREFIX), value);
+                        _nvram_set(name+strlen(CFE_NVRAM_PREFIX), value, is_temp);
                 }
         }
         else
 #endif
-	if ((ret = _nvram_set(name, value))) {
+	if ((ret = _nvram_set(name, value, is_temp))) {
 		printk( KERN_INFO "nvram: consolidating space!\n");
 		/* Consolidate space and try again */
 		if ((header = kmalloc(nvram_space, GFP_ATOMIC))) {
-			if (_nvram_commit(header) == 0)
-				ret = _nvram_set(name, value);
+			if (_nvram_generate(header, 1) == 0)
+				ret = _nvram_set(name, value, is_temp);
 			kfree(header);
 		}
 	}
 	spin_unlock_irqrestore(&nvram_lock, flags);
 
 	return ret;
+}
+
+int
+nvram_set(const char *name, const char *value)
+{
+	return nvram_set_temp(name, value, 0);
 }
 
 char *
@@ -701,7 +710,7 @@ nvram_nflash_commit(void)
 	 */
 	/* Regenerate NVRAM */
 	spin_lock_irqsave(&nvram_lock, flags);
-	ret = _nvram_commit(header);
+	ret = _nvram_generate(header, 0);
 	spin_unlock_irqrestore(&nvram_lock, flags);
 	if (ret)
 		goto done;
@@ -798,7 +807,7 @@ nvram_commit(void)
 	 */
 	/* Regenerate NVRAM */
 	spin_lock_irqsave(&nvram_lock, flags);
-	ret = _nvram_commit(header);
+	ret = _nvram_generate(header, 0);
 	spin_unlock_irqrestore(&nvram_lock, flags);
 	if (ret)
 		goto done;
@@ -867,19 +876,36 @@ done:
 }
 
 int
-nvram_getall(char *buf, int count)
+nvram_getall(char *buf, int count, int include_temp)
 {
 	unsigned long flags;
 	int ret;
 
 	spin_lock_irqsave(&nvram_lock, flags);
 	if (nvram_major >= 0)
-		ret = _nvram_getall(buf, count);
+		ret = _nvram_getall(buf, count, include_temp);
 	else
 		ret = early_nvram_getall(buf, count);
 	spin_unlock_irqrestore(&nvram_lock, flags);
 
 	return ret;
+}
+
+int
+nvram_clear(void)
+{
+	unsigned long flags;
+
+	// Check early clear
+	if (nvram_major < 0)
+		return 0;
+
+	/* Reset NVRAM */
+	spin_lock_irqsave(&nvram_lock, flags);
+	_nvram_exit();
+	spin_unlock_irqrestore(&nvram_lock, flags);
+
+	return 0;
 }
 
 EXPORT_SYMBOL(nvram_init);
@@ -890,9 +916,40 @@ EXPORT_SYMBOL(nvram_unset);
 EXPORT_SYMBOL(nvram_commit);
 
 /* User mode interface below */
+static ssize_t
+user_nvram_setx(const char *buf, size_t count, int is_temp)
+{
+	char tmp[512], *name = tmp, *value;
+	ssize_t ret;
+
+	if ((count+1) > sizeof(tmp)) {
+		if (!(name = kmalloc(count+1, GFP_KERNEL)))
+			return -ENOMEM;
+	}
+
+	if (copy_from_user(name, buf, count)) {
+		ret = -EFAULT;
+		goto done;
+	}
+	name[count] = '\0';
+	value = name;
+	name = strsep(&value, "=");
+	if (value)
+		ret = nvram_set_temp(name, value, is_temp);
+	else
+		ret = nvram_unset(name);
+
+	if( 0 == ret )
+		ret = count;
+done:
+	if (name != tmp)
+		kfree(name);
+
+	return ret;
+}
 
 static ssize_t
-dev_nvram_read(struct file *file, char *buf, size_t count, loff_t *ppos)
+user_nvram_getx(char *buf, size_t count, int is_temp)
 {
 	char tmp[100], *name = tmp, *value;
 	ssize_t ret;
@@ -911,7 +968,7 @@ dev_nvram_read(struct file *file, char *buf, size_t count, loff_t *ppos)
 
 	if (*name == '\0') {
 		/* Get all variables */
-		ret = nvram_getall(name, count);
+		ret = nvram_getall(name, count, is_temp);
 		if (ret == 0) {
 			if (copy_to_user(buf, name, count)) {
 				ret = -EFAULT;
@@ -943,36 +1000,38 @@ done:
 	return ret;
 }
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 36)
+static int
+#else
+static long
+#endif
+ioctl_nvram_setx(anvram_ioctl_t __user *nvr)
+{
+	ssize_t ret = user_nvram_setx(nvr->buf, nvr->count, nvr->is_temp);
+	return (ret < 0) ? ret : 0;
+}
+
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 36)
+static int
+#else
+static long
+#endif
+ioctl_nvram_getx(anvram_ioctl_t __user *nvr)
+{
+	ssize_t ret = user_nvram_getx(nvr->buf, nvr->count, nvr->is_temp);
+	return (ret < 0) ? ret : 0;
+}
+
+static ssize_t
+dev_nvram_read(struct file *file, char *buf, size_t count, loff_t *ppos)
+{
+	return user_nvram_getx(buf, count, 0);
+}
+
 static ssize_t
 dev_nvram_write(struct file *file, const char *buf, size_t count, loff_t *ppos)
 {
-	char tmp[512], *name = tmp, *value;
-	ssize_t ret;
-
-	if ((count+1) > sizeof(tmp)) {
-		if (!(name = kmalloc(count+1, GFP_KERNEL)))
-			return -ENOMEM;
-	}
-
-	if (copy_from_user(name, buf, count)) {
-		ret = -EFAULT;
-		goto done;
-	}
-	name[count] = '\0';
-	value = name;
-	name = strsep(&value, "=");
-	if (value)
-		ret = nvram_set(name, value) ;
-	else
-		ret = nvram_unset(name) ;
-
-	if( 0 == ret )
-		ret = count;
-done:
-	if (name != tmp)
-		kfree(name);
-
-	return ret;
+	return user_nvram_setx(buf, count, 0);
 }
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 36)
@@ -988,8 +1047,19 @@ dev_nvram_ioctl(
 	unsigned int cmd, 
 	unsigned long arg)
 {
-	if (cmd != NVRAM_MAGIC)
-		return -EINVAL;
+	if (cmd != NVRAM_MAGIC) {
+		switch(cmd)
+		{
+		case NVRAM_IOCTL_SETX:
+			return ioctl_nvram_setx((anvram_ioctl_t __user *)arg);
+		case NVRAM_IOCTL_GETX:
+			return ioctl_nvram_getx((anvram_ioctl_t __user *)arg);
+		case NVRAM_IOCTL_CLEAR:
+			return nvram_clear();
+		default:
+			return -EINVAL;
+		}
+	}
 
 #ifndef NLS_XFR
         return nvram_commit();

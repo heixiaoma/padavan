@@ -2181,7 +2181,7 @@ BCMINITFN(bcm_nvram_refresh)(char *flash)
 	/* default "empty" vars cache */
 	bzero(flash, 2);
 
-	if ((ret = nvram_getall(flash, MAX_NVRAM_SPACE)))
+	if ((ret = nvram_getall(flash, MAX_NVRAM_SPACE, 0)))
 		return;
 
 	/* determine nvram length */

@@ -4877,7 +4877,7 @@ BCMATTACHFN(initvars_flash)(si_t *sih, osl_t *osh, char **base, uint len)
 	/* allocate memory and read in flash */
 	if (!(flash = MALLOC(osh, MAX_NVRAM_SPACE)))
 		return BCME_NOMEM;
-	if ((err = nvram_getall(flash, MAX_NVRAM_SPACE)))
+	if ((err = nvram_getall(flash, MAX_NVRAM_SPACE, 0)))
 		goto exit;
 
 	/* create legacy devpath prefix */

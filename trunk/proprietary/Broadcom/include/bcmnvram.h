@@ -37,8 +37,16 @@ struct nvram_header {
 struct nvram_tuple {
 	char *name;
 	char *value;
+	uint32 val_len:31,
+	       val_tmp:1;
 	struct nvram_tuple *next;
 };
+
+typedef struct anvram_ioctl_s {
+	char *buf;
+	size_t count;
+	int is_temp;
+} anvram_ioctl_t;
 
 /*
  * Get default value for an NVRAM variable
@@ -102,6 +110,7 @@ extern char * nvram_get(const char *name);
  */
 extern int BCMINITFN(nvram_resetgpio_init)(void *sih);
 
+#ifdef __KERNEL__
 /*
  * Get the value of an NVRAM variable.
  * @param	name	name of variable to get
@@ -141,6 +150,7 @@ nvram_invmatch(const char *name, const char *invmatch)
 	const char *value = nvram_get(name);
 	return (value && strcmp(value, invmatch));
 }
+#endif
 
 /*
  * Set the value of an NVRAM variable. The name and value strings are
@@ -185,7 +195,7 @@ extern int nvram_commit(void);
  * @param	count	size of buffer in bytes
  * @return	0 on success and errno on failure
  */
-extern int nvram_getall(char *nvram_buf, int count);
+extern int nvram_getall(char *nvram_buf, int count, int include_temp);
 
 /*
  * returns the crc value of the nvram
@@ -214,7 +224,7 @@ extern int nvram_space;
 #define ROM_ENVRAM_SPACE	0x1000
 #define NVRAM_LZMA_MAGIC	0x4c5a4d41	/* 'LZMA' */
 
-#define NVRAM_MAX_VALUE_LEN 255
+#define NVRAM_MAX_VALUE_LEN 4096
 #define NVRAM_MAX_PARAM_LEN 64
 
 #define NVRAM_CRC_START_POSITION	9 /* magic, len, crc8 to be skipped */
@@ -226,6 +236,11 @@ extern int nvram_space;
 
 #define BCM_JUMBO_NVRAM_DELIMIT '\n'
 #define BCM_JUMBO_START "Broadcom Jumbo Nvram file"
+
+/* ioctl operations */
+#define NVRAM_IOCTL_CLEAR 20
+#define NVRAM_IOCTL_SETX  31
+#define NVRAM_IOCTL_GETX  41
 
 #if !defined(BCMHIGHSDIO) && defined(BCMTRXV2)
 extern char *_vars;
