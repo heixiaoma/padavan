@@ -135,7 +135,7 @@ cp -fL "$kernel_cf" "$kernel_tf"
 cp -fL "$uclibc_cf" "$uclibc_tf"
 cp -fL "$busybox_cf" "$busybox_tf"
 cp -fL "$board_mk" "$ROOTDIR/user/shared/board.mk"
-cp -fL "$board_h" "$ROOTDIR/user/shared/include/_board.h"
+cp -fL "$board_h" "$ROOTDIR/user/shared/include/board.h"
 
 # load firmware configuration by vendor
 if [ "$CONFIG_VENDOR" = "Ralink" ] ; then

@@ -8,6 +8,10 @@ CFLAGS  += -Wall -I. -I$(SHDIR) -I$(SHDIR)/include
 CFLAGS  += -s -DNO_PARALLEL
 #CFLAGS  += -DDEBUG -DDEBUG_MORE
 
+ifeq ($(CONFIG_VENDOR),Broadcom)
+CFLAGS	+= -lgcc_s
+endif
+
 LDFLAGS += -L$(SHDIR) -lshared
 
 all: $(EXEC)

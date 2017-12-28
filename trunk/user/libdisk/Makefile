@@ -11,6 +11,10 @@ include $(SHDIR)/cflags.mk
 CFLAGS += -fPIC
 CFLAGS += -I. -I$(SHDIR) -I$(SHDIR)/include
 
+ifeq ($(CONFIG_VENDOR),Broadcom)
+CFLAGS +=-lgcc_s
+endif
+
 LDFLAGS = -L$(SHDIR) -lshared
 
 OBJS = dev_info.o disk_io_tools.o disk_initial.o disk_share.o

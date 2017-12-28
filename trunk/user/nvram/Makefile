@@ -18,7 +18,15 @@ endif
 SHDIR = $(ROOTDIR)/user/shared
 
 CFLAGS	+= -Wall -I.
-CFLAGS	+= -I$(SHDIR) -I$(ROOTDIR)/$(LINUXDIR)/include/nvram
+CFLAGS	+= -I$(SHDIR)
+
+ifeq ($(CONFIG_VENDOR),Ralink)
+CFLAGS	+= -I$(ROOTDIR)/$(LINUXDIR)/include/nvram
+else ifeq ($(CONFIG_VENDOR),Broadcom)
+CFLAGS	+= -lgcc_s
+CFLAGS	+= -I$(ROOTDIR)/$(PROPRIETARY)/include
+endif
+
 CFLAGS	+= -s
 LDFLAGS	+= -L. -L../shared -lshared
 

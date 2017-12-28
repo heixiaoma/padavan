@@ -8,6 +8,9 @@ include $(ROOTDIR)/user/shared/board.mk
 
 ##################################################################
 
+# Ralink board
+ifeq ($(CONFIG_VENDOR),Ralink)
+
 BOARD_2G_IN_SOC=0
 BOARD_5G_IN_SOC=0
 BOARD_HAS_5G_RADIO=0
@@ -34,6 +37,15 @@ endif
 
 ifdef CONFIG_RT_SECOND_IF_RANGE_5GHZ
 BOARD_HAS_5G_RADIO=1
+endif
+
+# Broadcom board
+else ifeq ($(CONFIG_VENDOR),Broadcom)
+
+ifndef CONFIG_USB_SUPPORT
+BOARD_NUM_USB_PORTS=0
+endif
+
 endif
 
 CFLAGS += -DBOARD_2G_IN_SOC=$(BOARD_2G_IN_SOC)
