@@ -15,8 +15,8 @@
  * MA 02111-1307 USA
  */
 
-#ifndef _RALINK_BOARDS_H_
-#define _RALINK_BOARDS_H_
+#ifndef _BOARDS_H_
+#define _BOARDS_H_
 
 #include <board.h>
 

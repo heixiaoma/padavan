@@ -18,7 +18,7 @@
 #ifndef _httpd_h_
 #define _httpd_h_
 
-#include <ralink_boards.h>
+#include <boards.h>
 #include <ralink_priv.h>
 #include <netutils.h>
 #include <rtutils.h>
