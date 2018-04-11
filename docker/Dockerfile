@@ -23,6 +23,11 @@ RUN apt-get update && apt-get install -y \
 	libncurses5-dev \
 	zlib1g-dev
 
+# install 32-bit packages required by asuswrt prebuilt host tools
+RUN apt-get update && apt-get install -y \
+	libc6-i386 lib32stdc++6 \
+	lib32z1
+
 
 
 # get arguments
