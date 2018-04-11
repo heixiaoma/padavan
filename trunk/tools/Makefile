@@ -22,9 +22,11 @@ install :
 	mkdir -p bin
 	make -C mkimage
 	make -C sstrip
+ifeq ($(CONFIG_VENDOR),Ralink)
 	make -C mksquash_lzma-3.2 install
 ifeq ($(CONFIG_RT2880_ROOTFS_IN_FLASH),y)
 	make -C mksquash_xz-4.0 install
+endif
 endif
 
 clean:
