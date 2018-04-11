@@ -65,7 +65,7 @@ fi
 # load project root config
 . $ROOTDIR/.config
 
-if [ ! -f "$ROOTDIR/vendors/Ralink/$CONFIG_PRODUCT/config.arch" ] ; then
+if [ ! -f "$ROOTDIR/vendors/$CONFIG_VENDOR/$CONFIG_PRODUCT/config.arch" ] ; then
 	echo "Project product dir ($CONFIG_PRODUCT) not found! Terminate."
 	exit 1
 fi
@@ -81,9 +81,7 @@ uclibc_cf="$ROOTDIR/configs/boards/$CONFIG_FIRMWARE_PRODUCT_ID/libc.config"
 kernel_cd="$ROOTDIR/configs/boards/$CONFIG_FIRMWARE_PRODUCT_ID"
 kernel_tf="$ROOTDIR/$CONFIG_LINUXDIR/.config"
 
-if [ "$CONFIG_LINUXDIR" = "linux-3.0.x" ] ; then
-	kernel_id="3.0.x"
-fi
+kernel_id=`echo $CONFIG_LINUXDIR | sed -e 's/linux-//'`
 
 if [ "$CONFIG_FIRMWARE_TYPE_ROOTFS_IN_RAM" = "y" ] ; then
 	kernel_cf="${kernel_cd}/kernel-${kernel_id}.ram.config"
@@ -126,13 +124,15 @@ mkdir -p $ROOTDIR/images
 
 echo --------------------------COPY-CONFIG-----------------------------
 ######################### FOR-ALL-DEVICES #############################
-ln -sf vendors/Ralink/$CONFIG_PRODUCT/config.arch config.arch
+ln -sf vendors/$CONFIG_VENDOR/$CONFIG_PRODUCT/config.arch config.arch
 cp -fL "$kernel_cf" "$kernel_tf"
 cp -fL "$uclibc_cf" "$uclibc_tf"
 cp -fL "$busybox_cf" "$busybox_tf"
 cp -fL "$board_mk" "$ROOTDIR/user/shared/board.mk"
-cp -fL "$board_h" "$ROOTDIR/user/shared/include/ralink_board.h"
+cp -fL "$board_h" "$ROOTDIR/user/shared/include/board.h"
 ############################# WI-FI ###################################
+# vendor-specific: Ralink/MediaTek
+if [ "$CONFIG_VENDOR" = "Ralink" ] ; then
 dir_wifi_src="$ROOTDIR/proprietary/rt_wifi"
 dir_wifi_dst="$ROOTDIR/$CONFIG_LINUXDIR/drivers/net/wireless/ralink"
 dir_wifi_ver="2.7.X.X"
@@ -212,12 +212,18 @@ if [ -n "$CONFIG_MT7628_AP" ] ; then
 	cp -rfL "$dir_wifi_src/rtsoc/$dir_wifi_ver/mt7628" "$dir_wifi_dst/"
 	cp -rfL "$dir_wifi_src/rtsoc/$dir_wifi_ver/mt7628_ap" "$dir_wifi_dst/"
 fi
+fi
 ############################ HWNAT ####################################
+# vendor-specific: Ralink/MediaTek
+if [ "$CONFIG_VENDOR" = "Ralink" ] ; then
 dir_ppe_src="$ROOTDIR/proprietary/rt_ppe"
 dir_ppe_dst="$ROOTDIR/$CONFIG_LINUXDIR/net/nat"
 rm -rf "$dir_ppe_dst/hw_nat"
 cp -rf "$dir_ppe_src/hw_nat" "$dir_ppe_dst/"
+fi
 ############################ EIP93 ####################################
+# vendor-specific: Ralink/MediaTek
+if [ "$CONFIG_VENDOR" = "Ralink" ] ; then
 dir_eip_src="$ROOTDIR/proprietary/rt_eip"
 dir_eip_dst="$ROOTDIR/$CONFIG_LINUXDIR/drivers/net"
 if [ "$CONFIG_PRODUCT" = "MT7621" ] ; then
@@ -226,16 +232,19 @@ if [ "$CONFIG_PRODUCT" = "MT7621" ] ; then
 		cp -rf "$dir_eip_src" "$dir_eip_dst/"
 	fi
 fi
+fi
 ############################# CPU #####################################
 if [ "$CONFIG_FIRMWARE_CPU_SLEEP" = "y" -o "$CONFIG_RALINK_SYSTICK_COUNTER" = "y" ] ; then
-	func_enable_kernel_param "CONFIG_RALINK_SYSTICK_COUNTER"
-	func_enable_kernel_param "CONFIG_RALINK_CPUSLEEP"
 	func_enable_kernel_param "CONFIG_HZ_1000"
 	func_disable_kernel_param "CONFIG_HZ_250"
 	func_disable_kernel_param "CONFIG_HZ_100"
 	func_disable_kernel_param "CONFIG_CLKSRC_MIPS_GIC"
 	func_disable_kernel_param "CONFIG_HIGH_RES_TIMERS"
 fi
+# vendor-specific: Ralink/MediaTek
+if [ "$CONFIG_VENDOR" = "Ralink" ] ; then
+	func_enable_kernel_param "CONFIG_RALINK_SYSTICK_COUNTER"
+	func_enable_kernel_param "CONFIG_RALINK_CPUSLEEP"
 if [ "$CONFIG_RALINK_MT7620" = "y" ] ; then
 	if [ "$CONFIG_FIRMWARE_CPU_600MHZ" = "y" ] ; then
 		func_enable_kernel_param "CONFIG_RALINK_MT7620_PLL600"
@@ -250,6 +259,7 @@ if [ "$CONFIG_RALINK_MT7621" = "y" ] ; then
 		func_disable_kernel_param "CONFIG_RT2880_DRAM_128M"
 		func_enable_kernel_param "CONFIG_RT2880_DRAM_256M"
 	fi
+fi
 fi
 ############################# SMP #####################################
 if [ -n "$CONFIG_SMP" ] ; then

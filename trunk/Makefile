@@ -53,19 +53,18 @@ CONFIG_SHELL := $(shell if [ -x "$$BASH" ]; then echo $$BASH; \
 	  else if [ -x /bin/bash ]; then echo /bin/bash; \
 	  else echo sh; fi ; fi)
 
-ifneq ($(findstring linux-3.0,$(LINUXDIR)),)
-FIRMWARE_KERNEL_VER="3.0"
-CONFIG_CROSS_COMPILER_ROOT = $(CONFIG_TOOLCHAIN_DIR)/toolchain-3.0.x
-CONFIG_CROSS_COMPILER_PATH = $(CONFIG_CROSS_COMPILER_ROOT)/bin
-KERNEL_HEADERS_PATH = $(CONFIG_CROSS_COMPILER_ROOT)/include
+KERNELVER             = $(LINUXDIR:linux-%=%)
+KERNELVER_WORDS       = $(subst ., ,$(KERNELVER))
+FIRMWARE_KERNEL_VER   = "$(word 1,$(KERNELVER_WORDS)).$(word 2,$(KERNELVER_WORDS))"
+ARCH                  = $(shell cat $(ROOTDIR)/config.arch | grep config/\.\*/config.arch | sed -e 's:^.*config/::g' -e 's:/config.arch.*::g')
+ifeq ($(ARCH),arm)
+CONFIG_TOOLCHAIN_DIR ?= $(ROOTDIR)/../toolchain-armv7
+else ifeq ($(ARCH),mips)
+CONFIG_TOOLCHAIN_DIR ?= $(ROOTDIR)/../toolchain-mipsel
 endif
-
-ifneq ($(findstring linux-3.4,$(LINUXDIR)),)
-FIRMWARE_KERNEL_VER="3.4"
-CONFIG_CROSS_COMPILER_ROOT = $(CONFIG_TOOLCHAIN_DIR)/toolchain-3.4.x
+CONFIG_CROSS_COMPILER_ROOT = $(CONFIG_TOOLCHAIN_DIR)/toolchain-$(KERNELVER)
 CONFIG_CROSS_COMPILER_PATH = $(CONFIG_CROSS_COMPILER_ROOT)/bin
-KERNEL_HEADERS_PATH = $(CONFIG_CROSS_COMPILER_ROOT)/include
-endif
+KERNEL_HEADERS_PATH        = $(CONFIG_CROSS_COMPILER_ROOT)/include
 
 ifeq (config.arch,$(wildcard config.arch))
 ifeq ($(filter %_default, $(MAKECMDGOALS)),)
@@ -171,7 +170,9 @@ clean:
 	rm -rf $(ROMFSDIR)
 	rm -rf $(IMAGEDIR)
 	rm -rf $(LINUXDIR)/net/ipsec/alg/libaes $(LINUXDIR)/net/ipsec/alg/perlasm
+ifeq ($(ARCH),mips)
 	rm -f $(LINUXDIR)/arch/mips/ramdisk/*.gz
+endif
 
 %_romfs:
 	@case "$(@)" in \

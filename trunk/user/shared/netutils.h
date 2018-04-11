@@ -22,7 +22,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 
-#include <ralink_boards.h>
+#include <boards.h>
 
 #if ((__UCLIBC_MAJOR__ == 0) && (__UCLIBC_MINOR__ < 9 || (__UCLIBC_MINOR__ == 9 && __UCLIBC_SUBLEVEL__ < 30)))
 #undef HAVE_GETIFADDRS

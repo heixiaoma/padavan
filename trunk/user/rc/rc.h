@@ -23,7 +23,7 @@
 #include <arpa/inet.h>
 #include <linux/oom.h>
 
-#include <ralink_boards.h>
+#include <boards.h>
 
 #include <nvram_linux.h>
 

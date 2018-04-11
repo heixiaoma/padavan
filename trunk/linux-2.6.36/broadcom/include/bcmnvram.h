@@ -37,12 +37,19 @@ struct nvram_header {
 struct nvram_tuple {
 	char *name;
 	char *value;
-	unsigned short len;
-	unsigned short type;
-	unsigned short acc_level;
-	unsigned short enc;
+	uint32_t val_len:31,
+	         val_tmp:1;
 	struct nvram_tuple *next;
 };
+
+typedef struct anvram_ioctl_s {
+	int size;
+	int is_temp;
+	int len_param;
+	int len_value;
+	char *param;
+	char *value;
+} anvram_ioctl_t;
 
 /*
  * Get default value for an NVRAM variable
@@ -225,8 +232,13 @@ extern int nvram_space;
 #define ROM_ENVRAM_SPACE	0x1000
 #define NVRAM_LZMA_MAGIC	0x4c5a4d41	/* 'LZMA' */
 
-#define NVRAM_MAX_VALUE_LEN 255
-#define NVRAM_MAX_PARAM_LEN 64
+#define NVRAM_MAX_PARAM_LEN	64
+#define NVRAM_MAX_VALUE_LEN	4096
+
+#define NVRAM_IOCTL_COMMIT	10
+#define NVRAM_IOCTL_CLEAR	20
+#define NVRAM_IOCTL_SET	30
+#define NVRAM_IOCTL_GET	40
 
 #define NVRAM_CRC_START_POSITION	9 /* magic, len, crc8 to be skipped */
 #define NVRAM_CRC_VER_MASK	0xffffff00 /* for crc_ver_init */

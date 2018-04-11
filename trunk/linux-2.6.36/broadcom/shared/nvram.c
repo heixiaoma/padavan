@@ -28,14 +28,14 @@
 #include <sbsdram.h>
 
 extern struct nvram_tuple *_nvram_realloc(struct nvram_tuple *t, const char *name,
-                                          const char *value);
+                                          const char *value, int is_temp);
 extern void _nvram_free(struct nvram_tuple *t);
 extern int _nvram_read(void *buf, int idx);
 
 char *_nvram_get(const char *name);
-int _nvram_set(const char *name, const char *value);
+int _nvram_set(const char *name, const char *value, int is_temp);
 int _nvram_unset(const char *name);
-int _nvram_getall(char *buf, int count);
+int _nvram_getall(char *buf, int count, int include_temp);
 int _nvram_commit(struct nvram_header *header);
 int _nvram_init(void *sih, int idx);
 void _nvram_exit(void);
@@ -135,7 +135,7 @@ BCMINITFN(nvram_rehash)(struct nvram_header *header)
 			break;
 		*eq = '\0';
 		value = eq + 1;
-		_nvram_set(name, value);
+		_nvram_set(name, value, 0);
 		*eq = '=';
 	}
 
@@ -149,19 +149,19 @@ BCMINITFN(nvram_rehash)(struct nvram_header *header)
 	/* Set special SDRAM parameters */
 	if (!_nvram_get("sdram_init")) {
 		sprintf(buf, "0x%04X", (uint16)(header->crc_ver_init >> 16));
-		_nvram_set("sdram_init", buf);
+		_nvram_set("sdram_init", buf, 0);
 	}
 	if (!_nvram_get("sdram_config")) {
 		sprintf(buf, "0x%04X", (uint16)(header->config_refresh & 0xffff));
-		_nvram_set("sdram_config", buf);
+		_nvram_set("sdram_config", buf, 0);
 	}
 	if (!_nvram_get("sdram_refresh")) {
 		sprintf(buf, "0x%04X", (uint16)((header->config_refresh >> 16) & 0xffff));
-		_nvram_set("sdram_refresh", buf);
+		_nvram_set("sdram_refresh", buf, 0);
 	}
 	if (!_nvram_get("sdram_ncdl")) {
 		sprintf(buf, "0x%08X", header->config_ncdl);
-		_nvram_set("sdram_ncdl", buf);
+		_nvram_set("sdram_ncdl", buf, 0);
 	}
 
 	return 0;
@@ -191,7 +191,7 @@ _nvram_get(const char *name)
 
 /* Set the value of an NVRAM variable. Should be locked. */
 int
-BCMINITFN(_nvram_set)(const char *name, const char *value)
+BCMINITFN(_nvram_set)(const char *name, const char *value, int is_temp)
 {
 	uint i;
 	struct nvram_tuple *t, *u, **prev;
@@ -204,7 +204,7 @@ BCMINITFN(_nvram_set)(const char *name, const char *value)
 	     prev = &t->next, t = *prev);
 
 	/* (Re)allocate tuple */
-	if (!(u = _nvram_realloc(t, name, value)))
+	if (!(u = _nvram_realloc(t, name, value, is_temp)))
 		return -12; /* -ENOMEM */
 
 	/* Value reallocated */
@@ -254,7 +254,7 @@ BCMINITFN(_nvram_unset)(const char *name)
 
 /* Get all NVRAM variables. Should be locked. */
 int
-_nvram_getall(char *buf, int count)
+_nvram_getall(char *buf, int count, int include_temp)
 {
 	uint i;
 	struct nvram_tuple *t;
@@ -265,6 +265,8 @@ _nvram_getall(char *buf, int count)
 	/* Write name=value\0 ... \0\0 */
 	for (i = 0; i < NVRAM_HASH_TABLE_SIZE; i++) {
 		for (t = curr_nvram_hash[i]; t; t = t->next) {
+			if (!include_temp && t->val_tmp)
+				continue;
 			if ((count - len) > (strlen(t->name) + 1 + strlen(t->value) + 1))
 				len += sprintf(buf + len, "%s=%s", t->name, t->value) + 1;
 			else
@@ -408,7 +410,7 @@ BCMINITFN(_nvram_hash_sync)(void)
 	_nvram_hash_select(0);
 	for (i = 0; i < NVRAM_HASH_TABLE_SIZE; i++) {
 		for (t = devinfo_hash[i]; t; t = next) {
-			_nvram_set(t->name, t->value);
+			_nvram_set(t->name, t->value, t->val_tmp);
 			next = t->next;
 		}
 	}

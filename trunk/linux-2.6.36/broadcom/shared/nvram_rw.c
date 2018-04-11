@@ -39,14 +39,14 @@
 
 #endif
 
-struct nvram_tuple *_nvram_realloc(struct nvram_tuple *t, const char *name, const char *value);
+struct nvram_tuple *_nvram_realloc(struct nvram_tuple *t, const char *name, const char *value, int is_temp);
 void  _nvram_free(struct nvram_tuple *t);
 int  _nvram_read(void *buf, int idx);
 
 extern char *_nvram_get(const char *name);
-extern int _nvram_set(const char *name, const char *value);
+extern int _nvram_set(const char *name, const char *value, int is_temp);
 extern int _nvram_unset(const char *name);
-extern int _nvram_getall(char *buf, int count);
+extern int _nvram_getall(char *buf, int count, int include_temp);
 extern int _nvram_commit(struct nvram_header *header);
 extern int _nvram_init(void *si, int idx);
 extern void _nvram_exit(void);
@@ -108,7 +108,7 @@ nvram_getall(char *buf, int count)
 	int ret;
 
 	NVRAM_LOCK();
-	ret = _nvram_getall(buf, count);
+	ret = _nvram_getall(buf, count, 0);
 	NVRAM_UNLOCK();
 
 	return ret;
@@ -120,7 +120,7 @@ BCMINITFN(nvram_set)(const char *name, const char *value)
 	int ret;
 
 	NVRAM_LOCK();
-	ret = _nvram_set(name, value);
+	ret = _nvram_set(name, value, 0);
 	NVRAM_UNLOCK();
 
 	return ret;
@@ -503,7 +503,7 @@ BCMINITFN(_nvram_read)(void *buf, int idx)
 }
 
 struct nvram_tuple *
-BCMINITFN(_nvram_realloc)(struct nvram_tuple *t, const char *name, const char *value)
+BCMINITFN(_nvram_realloc)(struct nvram_tuple *t, const char *name, const char *value, int is_temp)
 {
 	if (!(t = MALLOC(NULL, sizeof(struct nvram_tuple) + strlen(name) + 1 +
 	                 strlen(value) + 1))) {
@@ -514,6 +514,9 @@ BCMINITFN(_nvram_realloc)(struct nvram_tuple *t, const char *name, const char *v
 	/* Copy name */
 	t->name = (char *) &t[1];
 	strcpy(t->name, name);
+
+	/* Mark for temp tuple */
+	t->val_tmp = (is_temp) ? 1 : 0;
 
 	/* Copy value */
 	t->value = t->name + strlen(name) + 1;

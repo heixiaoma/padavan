@@ -15,10 +15,10 @@
  * MA 02111-1307 USA
  */
 
-#ifndef _RALINK_BOARDS_H_
-#define _RALINK_BOARDS_H_
+#ifndef _BOARDS_H_
+#define _BOARDS_H_
 
-#include <ralink_board.h>
+#include <board.h>
 
 #define FW_MTD_NAME		"Firmware_Stub"
 #define FW_IMG_NAME		"/tmp/linux.trx"

@@ -15,7 +15,7 @@
  * MA 02111-1307 USA
  */
 
-#include <ralink_boards.h>
+#include <boards.h>
 #include "nvram_linux.h"
 #include "netutils.h"
 #include "defaults.h"
