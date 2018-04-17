@@ -32,14 +32,9 @@ CFLAGS += $(if $(CONFIG_CRYPTO_DEV_MTK_AES),-DUSE_MTK_AES,)
 CFLAGS += $(if $(CONFIG_RTC_HCTOSYS),-DUSE_RTC_HCTOSYS,)
 CFLAGS += $(if $(CONFIG_NETFILTER_XT_MATCH_CONNTRACK),-DUSE_MATCH_CONNTRACK,)
 
-ifeq ($(CONFIG_VENDOR),Ralink)
-CFLAGS += -DBOARD_RAM_SIZE=$(CONFIG_RALINK_RAM_SIZE)
-CFLAGS += -DSOC_RALINK
-else ifeq ($(CONFIG_VENDOR),Broadcom)
-CFLAGS += -DBOARD_RAM_SIZE=$(BOARD_RAM_SIZE)
-CFLAGS += $(if $(BCMWL5),-DCONFIG_BCMWL5,)
-CFLAGS += -DSOC_BROADCOM
-endif
+CFLAGS += -DBOARD_RAM_SIZE=$(strip $(if $(BOARD_RAM_SIZE),$(BOARD_RAM_SIZE),\
+						$(if $(CONFIG_RALINK_RAM_SIZE),$(CONFIG_RALINK_RAM_SIZE),\
+						$(error No BOARD_RAM_SIZE set!))))
 
 ifdef CONFIG_RALINK_RT3883
 CFLAGS += -DCONFIG_RALINK_RT3883
@@ -98,6 +93,22 @@ ifdef CONFIG_RT_SECOND_IF_RANGE_5GHZ
 CFLAGS += -DUSE_WID_5G=$(CONFIG_RT_SECOND_CARD)
 endif
 endif
+
+##################################################################
+# Vendor/Platform customization related params
+##################################################################
+
+ifeq ($(CONFIG_VENDOR),Ralink)
+CFLAGS += -DRTCONFIG_RALINK
+else ifeq ($(CONFIG_VENDOR),Broadcom)
+CFLAGS += -DRTCONFIG_BROADCOM
+ifeq ($(ARCH),arm)
+CFLAGS += -DRTCONFIG_BCMARM
+endif
+endif
+
+CFLAGS += $(if $(BCMWL6),-DRTCONFIG_BCMWL6 -DRTCONFIG_BCMDCS,)
+CFLAGS += $(if $(BCMWL6A),-DRTCONFIG_BCMWL6A,)
 
 ##################################################################
 # Project .config related params

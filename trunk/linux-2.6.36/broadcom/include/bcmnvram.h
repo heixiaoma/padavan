@@ -24,7 +24,9 @@
 #ifndef _LANGUAGE_ASSEMBLY
 
 #include <typedefs.h>
+#ifndef BRCM_SHARED
 #include <bcmdefs.h>
+#endif /* !BRCM_SHARED */
 
 struct nvram_header {
 	uint32 magic;
@@ -34,6 +36,7 @@ struct nvram_header {
 	uint32 config_ncdl;	/* ncdl values for memc */
 };
 
+#ifndef BRCM_SHARED
 struct nvram_tuple {
 	char *name;
 	char *value;
@@ -41,6 +44,7 @@ struct nvram_tuple {
 	         val_tmp:1;
 	struct nvram_tuple *next;
 };
+#endif /* !BRCM_SHARED */
 
 typedef struct anvram_ioctl_s {
 	int size;
@@ -51,6 +55,7 @@ typedef struct anvram_ioctl_s {
 	char *value;
 } anvram_ioctl_t;
 
+#ifndef BRCM_SHARED
 /*
  * Get default value for an NVRAM variable
  */
@@ -212,25 +217,32 @@ extern char * nvram_xfr(const char *buf);
 uint8 nvram_calc_crc(struct nvram_header * nvh);
 
 extern int nvram_space;
+#endif /* !BRCM_SHARED */
 #endif /* _LANGUAGE_ASSEMBLY */
 
+#ifndef BRCM_SHARED
 /* The NVRAM version number stored as an NVRAM variable */
 #define NVRAM_SOFTWARE_VERSION	"1"
+#endif /* !BRCM_SHARED */
 
 #define NVRAM_MAGIC		0x48534C46	/* 'FLSH' */
+#ifndef BRCM_SHARED
 #define NVRAM_CLEAR_MAGIC	0x0
 #define NVRAM_INVALID_MAGIC	0xFFFFFFFF
 #define NVRAM_VERSION		1
 #define NVRAM_HEADER_SIZE	20
+#endif /* !BRCM_SHARED */
 /* This definition is for precommit staging, and will be removed */
 #define NVRAM_SPACE		0x10000
 /* For CFE builds this gets passed in thru the makefile */
 #ifndef MAX_NVRAM_SPACE
 #define MAX_NVRAM_SPACE		0x10000
 #endif
+#ifndef BRCM_SHARED
 #define DEF_NVRAM_SPACE		0x10000
 #define ROM_ENVRAM_SPACE	0x1000
 #define NVRAM_LZMA_MAGIC	0x4c5a4d41	/* 'LZMA' */
+#endif /* !BRCM_SHARED */
 
 #define NVRAM_MAX_PARAM_LEN	64
 #define NVRAM_MAX_VALUE_LEN	4096
@@ -240,6 +252,7 @@ extern int nvram_space;
 #define NVRAM_IOCTL_SET	30
 #define NVRAM_IOCTL_GET	40
 
+#ifndef BRCM_SHARED
 #define NVRAM_CRC_START_POSITION	9 /* magic, len, crc8 to be skipped */
 #define NVRAM_CRC_VER_MASK	0xffffff00 /* for crc_ver_init */
 
@@ -296,5 +309,6 @@ extern uint _varsz;
 #define LINUX_FLASH_POLICY "linux_flash_policy"
 
 #endif /* defined(DUAL_IMAGE||CONFIG_DUAL_IMAGE)||__CONFIG_DUAL_IMAGE_FLASH_SUPPORT__ */
+#endif /* !BRCM_SHARED */
 
 #endif /* _bcmnvram_h_ */
