@@ -19,6 +19,7 @@
 #define BOARD_GPIO_LED_USB2	14	/* USB #2 LED */
 #undef  BOARD_GPIO_LED_ROUTER
 #define BOARD_GPIO_PWR_USB	13
+#define BOARD_GPIO_PWR_USB_ON	1	/* 1: 5V Power ON, 0: 5V Power OFF */
 #define BOARD_HAS_5G_11AC	0
 #define BOARD_NUM_ANT_5G_TX	0
 #define BOARD_NUM_ANT_5G_RX	0
