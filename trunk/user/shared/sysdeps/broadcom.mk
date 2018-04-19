@@ -1,1 +1,2 @@
 EXTRA_CFLAGS += -DBRCM_SHARED -I$(ROOTDIR)/$(LINUXDIR)/broadcom/include
+EXTRA_OBJS += gpio.o

@@ -33,7 +33,7 @@
 
 #include "rc.h"
 #include "switch.h"
-#include "gpio_pins.h"
+#include <gpio_pins.h>
 
 #define DL_POLL_INTERVAL	2 /* every 2 seconds  */
 #define DL_PID_FILE		"/var/run/detect_link.pid"

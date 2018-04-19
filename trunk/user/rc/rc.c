@@ -40,7 +40,7 @@
 #endif
 
 #include "rc.h"
-#include "gpio_pins.h"
+#include <gpio_pins.h>
 #include "switch.h"
 
 extern struct nvram_pair router_defaults[];

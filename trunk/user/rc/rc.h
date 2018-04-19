@@ -195,6 +195,9 @@ int check_if_dir_exist(const char *dirpath);
 int check_if_dev_exist(const char *devpath);
 int get_hotplug_action(const char *action);
 
+/* gpio_pins.c */
+int cpu_gpio_main(int argc, char **argv);
+
 /* net.c */
 int  route_add(char *ifname, int metric, char *dst, char *gateway, char *genmask);
 int  route_del(char *ifname, int metric, char *dst, char *gateway, char *genmask);

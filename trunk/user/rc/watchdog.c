@@ -35,7 +35,7 @@
 #include <sys/ioctl.h>
 
 #include "rc.h"
-#include "gpio_pins.h"
+#include <gpio_pins.h>
 
 
 #define WD_NORMAL_PERIOD	10		/* 10s */

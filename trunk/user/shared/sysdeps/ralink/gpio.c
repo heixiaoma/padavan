@@ -15,27 +15,40 @@
  * MA 02111-1307 USA
  */
 
-#ifndef _GPIO_PINS_H_
-#define _GPIO_PINS_H_
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <sys/ioctl.h>
+
+#include <ralink_gpio.h>
 
 ////////////////////////////////////////////////////////////////////////////////
-// Ralink CPU GPIO CONTROL
+// IOCTL
 ////////////////////////////////////////////////////////////////////////////////
 
-int cpu_gpio_mode_set_bit(int bit, unsigned int value);
-int cpu_gpio_mode_get_bit(int bit, unsigned int *p_value);
-int cpu_gpio_set_pin_direction(int pin, unsigned int use_output_direction);
-int cpu_gpio_set_pin(int pin, unsigned int value);
-int cpu_gpio_get_pin(int pin, unsigned int *p_value);
+int ralink_gpio_ioctl(unsigned int cmd, unsigned int par, void *value)
+{
+	int fd, retVal = 0;
 
-////////////////////////////////////////////////////////////////////////////////
+	fd = open(RALINK_GPIO_DEVPATH, O_RDONLY);
+	if (fd < 0) {
+		perror(RALINK_GPIO_DEVPATH);
+		return errno;
+	}
 
-int cpu_gpio_led_set(unsigned int led_pin, int blink_inverted);
-int cpu_gpio_led_enabled(unsigned int led_pin, int enabled);
-int cpu_gpio_irq_set(unsigned int irq_pin, int rising_edge, int falling_edge, pid_t pid);
+	cmd &= ((1u << IOCTL_GPIO_CMD_LENGTH_BITS) - 1);
+	cmd |= (par << IOCTL_GPIO_CMD_LENGTH_BITS);
 
-////////////////////////////////////////////////////////////////////////////////
+	if (ioctl(fd, cmd, value) < 0) {
+		perror("ioctl");
+		retVal = errno;
+	}
 
-int cpu_gpio_main(int argc, char **argv);
+	close(fd);
 
-#endif
+	return retVal;
+}

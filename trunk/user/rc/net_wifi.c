@@ -28,7 +28,7 @@
 
 #include "rc.h"
 #include "switch.h"
-#include "gpio_pins.h"
+#include <gpio_pins.h>
 
 static int
 wif_control(const char *wifname, int is_up)
