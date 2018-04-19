@@ -17,6 +17,7 @@
 
 #include <stdint.h>
 #include <unistd.h>
+#include <boards.h>
 
 ////////////////////////////////////////////////////////////////////////////////
 // GPIO
@@ -56,7 +57,8 @@ int cpu_gpio_get_pin(int pin, unsigned int *p_value)
 	bit_mask = 1 << pin;
 	bit_value = gpio_read() & bit_mask;
 
-	*p_value = (bit_value == 0 ? 0 : 1);
+	/* implicit active-low in general case */
+	*p_value = (bit_value == 0 ? BTN_PRESSED : 1);
 	return 0;
 }
 
