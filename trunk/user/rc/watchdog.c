@@ -38,7 +38,11 @@
 #include <gpio_pins.h>
 
 
+#ifdef GPIO_IRQ_SUPPORT
 #define WD_NORMAL_PERIOD	10		/* 10s */
+#else
+#define WD_NORMAL_PERIOD	1		/*  1s for GPIO polling mode */
+#endif /* GPIO_IRQ_SUPPORT */
 #define WD_URGENT_PERIOD	(100 * 1000)	/* 100ms */
 
 #define BTN_RESET_WAIT		5		/* 5s */
@@ -251,7 +255,9 @@ btn_check_reset(void)
 		
 		if (press_count > BTN_RESET_WAIT_COUNT) {
 			/* pressed >= 5sec, reset! */
+#ifdef GPIO_IRQ_SUPPORT
 			wd_alarmtimer(0, 0);
+#endif /* GPIO_IRQ_SUPPORT */
 #if defined (BOARD_GPIO_LED_POWER)
 			cpu_gpio_set_pin(BOARD_GPIO_LED_POWER, LED_OFF);
 #endif
@@ -303,11 +309,15 @@ btn_check_ez(int btn_pin, int btn_id, int *p_btn_state)
 		
 		if (press_count > BTN_EZ_WAIT_COUNT) {
 			/* pressed >= 3sec */
+#ifdef GPIO_IRQ_SUPPORT
 			wd_alarmtimer(0, 0);
+#endif /* GPIO_IRQ_SUPPORT */
 			ez_event_long(btn_id);
 		} else if (press_count > 0 && press_count < BTN_EZ_CANCEL_COUNT) {
-			/* pressed < 500ms */
+			/* pressed < 800ms */
+#ifdef GPIO_IRQ_SUPPORT
 			wd_alarmtimer(0, 0);
+#endif /* GPIO_IRQ_SUPPORT */
 			ez_event_short(btn_id);
 		}
 	}
@@ -1029,6 +1039,7 @@ watchdog_on_sigusr1(void)
 	}
 }
 
+#ifdef GPIO_IRQ_SUPPORT
 static void
 watchdog_on_sigusr2(void)
 {
@@ -1036,14 +1047,18 @@ watchdog_on_sigusr2(void)
 	if (wd_itv.it_value.tv_usec != WD_URGENT_PERIOD)
 		wd_alarmtimer(0, WD_URGENT_PERIOD);
 }
+#endif /* GPIO_IRQ_SUPPORT */
 
 static void
 watchdog_on_timer(void)
 {
 	int is_ap_mode;
 
+#ifdef GPIO_IRQ_SUPPORT
 	/* if timer is set to less than 1 sec, then check buttons only */
-	if (wd_itv.it_value.tv_sec == 0) {
+	if (wd_itv.it_value.tv_sec == 0)
+#endif /* GPIO_IRQ_SUPPORT */
+	{
 		int i_ret = 0;
 		
 		/* handle buttons */
@@ -1062,11 +1077,19 @@ watchdog_on_timer(void)
 		if (i_ret) {
 			if (wd_itv.it_value.tv_usec != WD_URGENT_PERIOD)
 				wd_alarmtimer(0, WD_URGENT_PERIOD);
+#ifdef GPIO_IRQ_SUPPORT
 		} else {
+#else
+			/* if timer is set to less than 1 sec, then bypass the following tasks */
+			return;
+		} else if (wd_itv.it_value.tv_sec == 0) {
+#endif /* GPIO_IRQ_SUPPORT */
 			wd_alarmtimer(WD_NORMAL_PERIOD, 0);
 		}
 		
+#ifdef GPIO_IRQ_SUPPORT
 		return;
+#endif /* GPIO_IRQ_SUPPORT */
 	}
 
 	is_ap_mode = get_ap_mode();
@@ -1103,11 +1126,14 @@ catch_sig_watchdog(int sig)
 	case SIGUSR1:
 		watchdog_on_sigusr1();
 		break;
+#ifdef GPIO_IRQ_SUPPORT
 	case SIGUSR2:
 		watchdog_on_sigusr2();
 		break;
+#endif /* GPIO_IRQ_SUPPORT */
 	case SIGTERM:
 		remove(WD_PID_FILE);
+#ifdef GPIO_IRQ_SUPPORT
 #if defined (BOARD_GPIO_BTN_WPS)
 		cpu_gpio_irq_set(BOARD_GPIO_BTN_WPS, 0, 0, 0);
 #endif
@@ -1120,6 +1146,7 @@ catch_sig_watchdog(int sig)
 #if defined (BOARD_GPIO_BTN_RESET)
 		cpu_gpio_irq_set(BOARD_GPIO_BTN_RESET, 0, 0, 0);
 #endif
+#endif /* GPIO_IRQ_SUPPORT */
 		wd_alarmtimer(0, 0);
 		exit(0);
 		break;
@@ -1196,6 +1223,7 @@ watchdog_main(int argc, char *argv[])
 
 	nvram_set_int_temp("wd_notify_id", 0);
 
+#ifdef GPIO_IRQ_SUPPORT
 #if defined (BOARD_GPIO_BTN_WPS)
 	cpu_gpio_irq_set(BOARD_GPIO_BTN_WPS, 0, 1, pid);
 #endif
@@ -1208,6 +1236,7 @@ watchdog_main(int argc, char *argv[])
 #if defined (BOARD_GPIO_BTN_RESET)
 	cpu_gpio_irq_set(BOARD_GPIO_BTN_RESET, 0, 1, pid);
 #endif
+#endif /* GPIO_IRQ_SUPPORT */
 
 	/* set timer */
 	wd_alarmtimer(WD_NORMAL_PERIOD, 0);

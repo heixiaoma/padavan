@@ -100,6 +100,7 @@ endif
 
 ifeq ($(CONFIG_VENDOR),Ralink)
 CFLAGS += -DRTCONFIG_RALINK
+CFLAGS += -DGPIO_IRQ_SUPPORT
 else ifeq ($(CONFIG_VENDOR),Broadcom)
 CFLAGS += -DRTCONFIG_BROADCOM
 ifeq ($(ARCH),arm)
